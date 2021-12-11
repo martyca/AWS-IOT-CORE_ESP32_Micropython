@@ -18,28 +18,32 @@ SSL_CONFIG  = {'key': PRIVATE_KEY,'cert': CERTIFICATE, 'server_side': False}
 LEDCOUNT    = 8
 LEDPIN      = 13
 
-np = neopixel.NeoPixel(machine.Pin(LEDPIN), LEDCOUNT
-)
-def clearstrip(LEDCOUNT):
-  print('Clearing led strip.')
-  for i in range(LEDCOUNT):
-    np[i] = (0,0,0)
-  np.write()
+np = neopixel.NeoPixel(machine.Pin(LEDPIN), LEDCOUNT)
+
+def yellowPixel(lednumber):
+    np[lednumber] = (128,128,0)
+    np.write()
+
+def greenPixel(lednumber):
+    np[lednumber] = (0,128,0)
+    np.write()
+
+def redPixel(lednumber):
+    np[lednumber] = (128,0,0)
+    np.write()
 
 def connect_wifi():
   import network
   sta_if = network.WLAN(network.STA_IF)
   if not sta_if.isconnected():
     print('Connecting to network...')
-    np[0] = (128,128,0)
-    np.write()
+    yellowPixel(0)
     sta_if.active(True)
     sta_if.connect(SSID, PASS)
     while not sta_if.isconnected():
       pass
   print('Connected to network...')
-  np[0] = (0,128,0)
-  np.write()
+  greenPixel(0)
   print('network config:', sta_if.ifconfig())
 
 def message_callback(topic, message):
@@ -52,22 +56,19 @@ def message_callback(topic, message):
 
 def connect_iot_core():
   print('Connecting to: {}'.format(ENDPOINT))
-  np[1] = (128,128,0)
-  np.write()
+  yellowPixel(1)
   mqtt = MQTTClient( THING_NAME, ENDPOINT, port = 8883, keepalive = 10000, ssl = True, ssl_params = SSL_CONFIG )
   mqtt.connect()
   mqtt.set_callback(message_callback)
   print('Connected to: {}'.format(ENDPOINT))
-  np[1] = (0,128,0)
-  np.write()
+  greenPixel(1)
   mqtt.subscribe(TOPIC)
   print('Subscribed to topic: {}'.format(TOPIC))
-  np[2] = (0,128,0)
-  np.write()
+  greenPixel(2)
   return mqtt
   
 if __name__ == '__main__':
-  clearstrip(LEDCOUNT)
+  np.fill((0,0,0))
   connect_wifi()
   subscription = connect_iot_core()
   while True:
